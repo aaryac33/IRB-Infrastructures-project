@@ -1,52 +1,37 @@
-import cv2
 import os
+import subprocess
 
-def extract_frames_from_folder(input_folder, output_folder, frame_interval=1):
+def extract_frames(input_folder, output_folder, frame_interval):
+    # Get a list of all video files in the input folder
+    video_files = [file for file in os.listdir(input_folder) if file.lower().endswith((".mp4", ".avi", ".mkv", ".mov"))]
+
     # Create the output folder if it doesn't exist
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
+    os.makedirs(output_folder, exist_ok=True)
 
-    video_files = [f for f in os.listdir(input_folder) if f.endswith('.mp4')]
-
+    # Loop through each video file and extract frames using ffmpeg
     for video_file in video_files:
-        video_path = os.path.join(input_folder, video_file)
-        extract_frames(video_path, output_folder, frame_interval)
+        input_file_path = os.path.join(input_folder, video_file)
+        output_file_pattern = os.path.join(output_folder, f"{os.path.splitext(video_file)[0]}_%d.png")
 
-def extract_frames(video_path, output_folder, frame_interval=1):
-    cap = cv2.VideoCapture(video_path)
+        command = f"ffmpeg -i \"{input_file_path}\" -vf fps={1/frame_interval} \"{output_file_pattern}\""
+        subprocess.run(command, shell=True)
 
-    # Check if the video file is opened successfully
-    if not cap.isOpened():
-        print(f"Error opening video file: {video_path}")
-        return
-
-    frame_count = 0
+def get_frame_interval():
     while True:
-        ret, frame = cap.read()
-
-        # Break the loop when the video ends
-        if not ret:
-            break
-
-        # Save the frame as an image file
-        if frame_count % frame_interval == 0:
-            output_path = os.path.join(output_folder, f"frame_{os.path.splitext(video_path)[0]}_{frame_count}.png")
-            cv2.imwrite(output_path, frame)
-            print(f"Frame {frame_count} from {video_path} saved as {output_path}")
-
-        frame_count += 1
-
-    cap.release()
+        try:
+            frame_interval = int(input("Enter the frame interval (e.g., 1 for every frame, 2 for every 2nd frame): "))
+            if frame_interval > 0:
+                return frame_interval
+            else:
+                print("Please enter a positive integer.")
+        except ValueError:
+            print("Invalid input. Please enter a positive integer.")
 
 if __name__ == "__main__":
-    # Replace 'videos_folder' with the path to the folder containing the videos
-    input_folder = "videos_folder"
+    input_folder = r"path o the folder having videos"  # Replace with the path to your input folder
+    output_folder = r"path of the folder where you want to save the images"  # Replace with the path to your output folder
 
-    # Replace 'frames_folder' with the path to the folder where you want to save the extracted frames
-    output_folder = "frames_folder"
+    # Get the frame interval from the user
+    frame_interval = get_frame_interval()
 
-    # Set the frame_interval to specify how many frames you want to skip before saving the next frame
-    # For example, frame_interval=1 will save every frame, frame_interval=2 will save every other frame, and so on.
-    frame_interval = 1
-
-    extract_frames_from_folder(input_folder, output_folder, frame_interval)
+    extract_frames(input_folder, output_folder, frame_interval)
