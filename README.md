@@ -8,4 +8,4 @@ When you train such a big set of images, it is difficult to upload on VSC (if do
 
 Then, I had to detect/test the images. This was done using a pre-trained model and run with yolov5. This model detected the type of vehicle car, LCV, truck, bus, etc. We have used lacs of images to train this model by annotating these classes. 
 
-This process will then be incorporated in a complete GUI based setup. 
+This process will then be incorporated into a complete GUI-based setup. 
